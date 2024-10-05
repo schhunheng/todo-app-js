@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App & JS</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <style>
+      body {
+        background-color: rgb(145, 209, 234);
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+          sans-serif;
+      }
+      input,
+      button {
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+          sans-serif;
+      }
+      #title {
+        color: rgba(255, 0, 0, 0.774);
+        cursor: pointer;
+      }
+      #newTitle {
+        color: blue;
+      }
+      .header,
+      .addTask {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        /* background-color: green; */
+      }
+      .addTask input {
+        flex-grow: 1;
+        margin-right: 0.5rem;
+      }
+      .content {
+        width: 50%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 10px;
+      }
+      .card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #a0d683;
+        border-radius: 8px;
+        color: rgb(74, 96, 141);
+        padding: 0 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .card span:last-child {
+        cursor: pointer;
+        color: rgb(180, 28, 28);
+        font-size: 1rem;
+      }
+      .card span:first-child {
+        cursor: pointer;
+        color: rgb(46, 150, 6);
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <div class="header">
+        <h1 id="title">TODO APP</h1>
+        <input onchange="changeTheme()" type="color" id="theme" />
+      </div>
+      <!-- <div class="addTask">
+        <input type="text" id="task" placeholder="Enter your task here" />
+
+        <button onclick="addTask()">Add Task</button>
+      </div> -->
+      <form class="addTask" onsubmit="addTask()">
+        <input
+          minlength="25"
+          name="taskName"
+          required
+          type="text"
+          id="task"
+          placeholder="Enter your task here"
+        />
+        <button type="submit">Add Task</button>
+      </form>
+      <hr />
+      <div class="todoList"></div>
+    </div>
+
+    <script>
+      function changeTheme() {
+        let themeElement = document.getElementById("theme");
+        color = themeElement.value || sessionStorage.getItem("theme");
+        document.body.style.backgroundColor = color;
+        sessionStorage.setItem("theme", themeElement.value);
+      }
+
+      function initTheme() {
+        let themeElement = document.getElementById("theme");
+        color = sessionStorage.getItem("theme") || themeElement.value;
+        document.body.style.backgroundColor = color;
+        themeElement.value = color;
+      }
+
+      function renderTodoList() {
+        let todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+        let todoContainer = document.getElementsByClassName("todoList")[0];
+        todoContainer.innerHTML = "";
+        todos
+          .filter((item) => item.completed == false && item.isDeleted == false)
+          .forEach((todo, index) => {
+            todoContainer.innerHTML += `
+            <div class="card">
+                <p>${todo.title}</p>
+                <div>
+                    <span onclick="completedTask(${todo.id})" id="complete-task-${todo.id}"  class="material-symbols-outlined"  tooltip="ajsldfjk"> task_alt </span>
+                    <span onclick="removedTask(${todo.id})" id="remove-task-${todo.id}" class="material-symbols-outlined"> close </span>
+                </div>
+            </div>
+            `;
+          });
+      }
+      function addTask() {
+        let todos = JSON.parse(localStorage.getItem("todos")) || [];
+        title = document.getElementById("task").value;
+        let id = todos.length;
+        if (title) {
+          todos.push({
+            id: id,
+            title: title,
+            completed: false,
+            isDeleted: false,
+          });
+          document.getElementById("task").value = "";
+          localStorage.setItem("todos", JSON.stringify(todos));
+          renderTodoList();
+        }
+      }
+
+      function addTaskWithForm(event) {
+        event.preventDefault(); // prevent form submission
+        form = event.target.taskName.value;
+        let todos = JSON.parse(localStorage.getItem("todos")) || [];
+        let id = todos.length;
+        if (form) {
+          todos.push({
+            id: id,
+            title: title,
+            completed: false,
+            isDeleted: false,
+          });
+          document.getElementById("task").value = "";
+          localStorage.setItem("todos", JSON.stringify(todos));
+          renderTodoList();
+        }
+      }
+      function completedTask(index) {
+        let todos = JSON.parse(localStorage.getItem("todos"));
+        console.log(index, todos);
+        todos[index].completed = true;
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodoList();
+        Toastify({
+          text: `${todos[index].title} was completed`,
+          duration: 3000,
+          newWindow: false,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "center", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)",
+          },
+        }).showToast();
+      }
+
+      function removedTask(index) {
+        let todos = JSON.parse(localStorage.getItem("todos"));
+        todos[index].isDeleted = true;
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodoList();
+        Toastify({
+          text: `${todos[index].title} was removed`,
+          duration: 3000,
+          newWindow: false,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "center", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)",
+          },
+        }).showToast();
+      }
+      renderTodoList();
+      initTheme();
+    </script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+  </body>
+</html>
